@@ -1,54 +1,99 @@
-﻿<%@ Page Title="Hóa đơn" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Hoadon.aspx.cs" Inherits="MyWebsite.Hoadon" %>
-<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <asp:FormView ID="FormView1" runat="server" AllowPaging="True" BackColor="White" BorderColor="#999999" BorderStyle="None" BorderWidth="1px" CellPadding="3" DataKeyNames="MaHD" DataSourceID="SqlDataSource1" GridLines="Vertical" Width="163px">
+﻿<%@ Page Title="Hóa đơn" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" CodeFile="hoadon.aspx.cs" Inherits="hoadon" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" Runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="FeaturedContent" Runat="Server">
+</asp:Content>
+<asp:Content ID="Content3" ContentPlaceHolderID="MainContent" Runat="Server">
+    <asp:FormView ID="FormView1" runat="server" AllowPaging="True" DataKeyNames="MaSP" DataSourceID="SqlDataSource2" Width="194px">
         <EditItemTemplate>
-            MaHD:
-            <asp:Label ID="MaHDLabel1" runat="server" Text='<%# Eval("MaHD") %>' />
+            Mã SP:
+            <asp:Label ID="MaSPLabel1" runat="server" Text='<%# Eval("MaSP") %>' />
             <br />
-            MaKH:
-            <asp:TextBox ID="MaKHTextBox" runat="server" Text='<%# Bind("MaKH") %>' />
+            Mã loại SP:
+            <asp:TextBox ID="MaLoaiSPTextBox" runat="server" Text='<%# Bind("MaLoaiSP") %>' />
+            <br />
+            Loại:
+            <asp:TextBox ID="LoaiTextBox" runat="server" Text='<%# Bind("Loai") %>' />
+            <br />
+            Tên:
+            <asp:TextBox ID="TenTextBox" runat="server" Text='<%# Bind("Ten") %>' />
+            <br />
+            Giá:
+            <asp:TextBox ID="GiaTextBox" runat="server" Text='<%# Bind("Gia") %>' />
+            <br />
+            Mô tả:
+            <asp:TextBox ID="MoTaTextBox" runat="server" Text='<%# Bind("MoTa") %>' />
             <br />
             <asp:LinkButton ID="UpdateButton" runat="server" CausesValidation="True" CommandName="Update" Text="Update" />
             &nbsp;<asp:LinkButton ID="UpdateCancelButton" runat="server" CausesValidation="False" CommandName="Cancel" Text="Cancel" />
         </EditItemTemplate>
-        <EditRowStyle BackColor="#008A8C" Font-Bold="True" ForeColor="White" />
-        <FooterStyle BackColor="#CCCCCC" ForeColor="Black" />
-        <HeaderStyle BackColor="#000084" Font-Bold="True" ForeColor="White" />
         <InsertItemTemplate>
-            MaHD:
-            <asp:TextBox ID="MaHDTextBox" runat="server" Text='<%# Bind("MaHD") %>' />
+            Mã SP:
+            <asp:TextBox ID="MaSPTextBox" runat="server" Text='<%# Bind("MaSP") %>' />
             <br />
-            MaKH:
-            <asp:TextBox ID="MaKHTextBox" runat="server" Text='<%# Bind("MaKH") %>' />
+            Mã loại SP:
+            <asp:TextBox ID="MaLoaiSPTextBox" runat="server" Text='<%# Bind("MaLoaiSP") %>' />
+            <br />
+            Loại:
+            <asp:TextBox ID="LoaiTextBox" runat="server" Text='<%# Bind("Loai") %>' />
+            <br />
+            Tên:
+            <asp:TextBox ID="TenTextBox" runat="server" Text='<%# Bind("Ten") %>' />
+            <br />
+            Giá:
+            <asp:TextBox ID="GiaTextBox" runat="server" Text='<%# Bind("Gia") %>' />
+            <br />
+            Mô tả:
+            <asp:TextBox ID="MoTaTextBox" runat="server" Text='<%# Bind("MoTa") %>' />
             <br />
             <asp:LinkButton ID="InsertButton" runat="server" CausesValidation="True" CommandName="Insert" Text="Insert" />
             &nbsp;<asp:LinkButton ID="InsertCancelButton" runat="server" CausesValidation="False" CommandName="Cancel" Text="Cancel" />
         </InsertItemTemplate>
         <ItemTemplate>
-            MaHD:
-            <asp:Label ID="MaHDLabel" runat="server" Text='<%# Eval("MaHD") %>' />
+            Mã SP:
+            <asp:Label ID="MaSPLabel" runat="server" Text='<%# Eval("MaSP") %>' />
             <br />
-            MaKH:
-            <asp:Label ID="MaKHLabel" runat="server" Text='<%# Bind("MaKH") %>' />
+            Mã loại SP:
+            <asp:Label ID="MaLoaiSPLabel" runat="server" Text='<%# Bind("MaLoaiSP") %>' />
+            <br />
+            Loại:
+            <asp:Label ID="LoaiLabel" runat="server" Text='<%# Bind("Loai") %>' />
+            <br />
+            Tên:
+            <asp:Label ID="TenLabel" runat="server" Text='<%# Bind("Ten") %>' />
+            <br />
+            Giá:
+            <asp:Label ID="GiaLabel" runat="server" Text='<%# Bind("Gia") %>' />
+            <br />
+            Mô tả:
+            <asp:Label ID="MoTaLabel" runat="server" Text='<%# Bind("MoTa") %>' />
             <br />
             <asp:LinkButton ID="EditButton" runat="server" CausesValidation="False" CommandName="Edit" Text="Edit" />
             &nbsp;<asp:LinkButton ID="DeleteButton" runat="server" CausesValidation="False" CommandName="Delete" Text="Delete" />
             &nbsp;<asp:LinkButton ID="NewButton" runat="server" CausesValidation="False" CommandName="New" Text="New" />
         </ItemTemplate>
-        <PagerStyle BackColor="#999999" ForeColor="Black" HorizontalAlign="Center" />
-        <RowStyle BackColor="#EEEEEE" ForeColor="Black" />
     </asp:FormView>
-    <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString="Data Source=.;Initial Catalog=QLBH;Integrated Security=True" DeleteCommand="DELETE FROM [HoaDon] WHERE [MaHD] = @MaHD" InsertCommand="INSERT INTO [HoaDon] ([MaHD], [MaKH]) VALUES (@MaHD, @MaKH)" ProviderName="System.Data.SqlClient" SelectCommand="SELECT [MaHD], [MaKH] FROM [HoaDon]" UpdateCommand="UPDATE [HoaDon] SET [MaKH] = @MaKH WHERE [MaHD] = @MaHD">
+    <asp:SqlDataSource ID="SqlDataSource2" runat="server" ConnectionString="<%$ ConnectionStrings:ConnectionString %>" DeleteCommand="DELETE FROM [SanPham] WHERE [MaSP] = @MaSP" InsertCommand="INSERT INTO [SanPham] ([MaSP], [MaLoaiSP], [Loai], [Ten], [Gia], [MoTa]) VALUES (@MaSP, @MaLoaiSP, @Loai, @Ten, @Gia, @MoTa)" SelectCommand="SELECT [MaSP], [MaLoaiSP], [Loai], [Ten], [Gia], [MoTa] FROM [SanPham]" UpdateCommand="UPDATE [SanPham] SET [MaLoaiSP] = @MaLoaiSP, [Loai] = @Loai, [Ten] = @Ten, [Gia] = @Gia, [MoTa] = @MoTa WHERE [MaSP] = @MaSP">
         <DeleteParameters>
-            <asp:Parameter Name="MaHD" Type="String" />
+            <asp:Parameter Name="MaSP" Type="Int32" />
         </DeleteParameters>
         <InsertParameters>
-            <asp:Parameter Name="MaHD" Type="String" />
-            <asp:Parameter Name="MaKH" Type="Int32" />
+            <asp:Parameter Name="MaSP" Type="Int32" />
+            <asp:Parameter Name="MaLoaiSP" Type="Int32" />
+            <asp:Parameter Name="Loai" Type="String" />
+            <asp:Parameter Name="Ten" Type="String" />
+            <asp:Parameter Name="Gia" Type="Decimal" />
+            <asp:Parameter Name="MoTa" Type="String" />
         </InsertParameters>
         <UpdateParameters>
-            <asp:Parameter Name="MaKH" Type="Int32" />
-            <asp:Parameter Name="MaHD" Type="String" />
+            <asp:Parameter Name="MaLoaiSP" Type="Int32" />
+            <asp:Parameter Name="Loai" Type="String" />
+            <asp:Parameter Name="Ten" Type="String" />
+            <asp:Parameter Name="Gia" Type="Decimal" />
+            <asp:Parameter Name="MoTa" Type="String" />
+            <asp:Parameter Name="MaSP" Type="Int32" />
         </UpdateParameters>
     </asp:SqlDataSource>
 </asp:Content>
+

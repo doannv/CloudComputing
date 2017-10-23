@@ -1,128 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Security;
-using Owin;
-using MyWebsite.Models;
 
-namespace MyWebsite.Account
+using Microsoft.AspNet.Membership.OpenAuth;
+
+public partial class Account_Manage : System.Web.UI.Page
 {
-    public partial class Manage : System.Web.UI.Page
+    protected string SuccessMessage
     {
-        protected string SuccessMessage
+        get;
+        private set;
+    }
+
+    protected bool CanRemoveExternalLogins
+    {
+        get;
+        private set;
+    }
+
+    protected void Page_Load()
+    {
+        if (!IsPostBack)
         {
-            get;
-            private set;
-        }
+            // Determine the sections to render
+            var hasLocalPassword = OpenAuth.HasLocalPassword(User.Identity.Name);
+            setPassword.Visible = !hasLocalPassword;
+            changePassword.Visible = hasLocalPassword;
 
-        private bool HasPassword(ApplicationUserManager manager)
-        {
-            return manager.HasPassword(User.Identity.GetUserId());
-        }
+            CanRemoveExternalLogins = hasLocalPassword;
 
-        public bool HasPhoneNumber { get; private set; }
-
-        public bool TwoFactorEnabled { get; private set; }
-
-        public bool TwoFactorBrowserRemembered { get; private set; }
-
-        public int LoginsCount { get; set; }
-
-        protected void Page_Load()
-        {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
-            HasPhoneNumber = String.IsNullOrEmpty(manager.GetPhoneNumber(User.Identity.GetUserId()));
-
-            // Enable this after setting up two-factor authentientication
-            //PhoneNumber.Text = manager.GetPhoneNumber(User.Identity.GetUserId()) ?? String.Empty;
-
-            TwoFactorEnabled = manager.GetTwoFactorEnabled(User.Identity.GetUserId());
-
-            LoginsCount = manager.GetLogins(User.Identity.GetUserId()).Count;
-
-            var authenticationManager = HttpContext.Current.GetOwinContext().Authentication;
-
-            if (!IsPostBack)
+            // Render success message
+            var message = Request.QueryString["m"];
+            if (message != null)
             {
-                // Determine the sections to render
-                if (HasPassword(manager))
-                {
-                    ChangePassword.Visible = true;
-                }
-                else
-                {
-                    CreatePassword.Visible = true;
-                    ChangePassword.Visible = false;
-                }
+                // Strip the query string from action
+                Form.Action = ResolveUrl("~/Account/Manage.aspx");
 
-                // Render success message
-                var message = Request.QueryString["m"];
-                if (message != null)
-                {
-                    // Strip the query string from action
-                    Form.Action = ResolveUrl("~/Account/Manage");
-
-                    SuccessMessage =
-                        message == "ChangePwdSuccess" ? "Your password has been changed."
-                        : message == "SetPwdSuccess" ? "Your password has been set."
-                        : message == "RemoveLoginSuccess" ? "The account was removed."
-                        : message == "AddPhoneNumberSuccess" ? "Phone number has been added"
-                        : message == "RemovePhoneNumberSuccess" ? "Phone number was removed"
-                        : String.Empty;
-                    successMessage.Visible = !String.IsNullOrEmpty(SuccessMessage);
-                }
+                SuccessMessage =
+                    message == "ChangePwdSuccess" ? "Your password has been changed."
+                    : message == "SetPwdSuccess" ? "Your password has been set."
+                    : message == "RemoveLoginSuccess" ? "The external login was removed."
+                    : String.Empty;
+                successMessage.Visible = !String.IsNullOrEmpty(SuccessMessage);
             }
         }
+        
+    }
 
-
-        private void AddErrors(IdentityResult result)
+    protected void setPassword_Click(object sender, EventArgs e)
+    {
+        if (IsValid)
         {
-            foreach (var error in result.Errors)
+            var result = OpenAuth.AddLocalPassword(User.Identity.Name, password.Text);
+            if (result.IsSuccessful)
             {
-                ModelState.AddModelError("", error);
+                Response.Redirect("~/Account/Manage.aspx?m=SetPwdSuccess");
+            }
+            else
+            {
+                
+                ModelState.AddModelError("NewPassword", result.ErrorMessage);
+                
             }
         }
+    }
 
-        // Remove phonenumber from user
-        protected void RemovePhone_Click(object sender, EventArgs e)
-        {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-            var result = manager.SetPhoneNumber(User.Identity.GetUserId(), null);
-            if (!result.Succeeded)
-            {
-                return;
-            }
-            var user = manager.FindById(User.Identity.GetUserId());
-            if (user != null)
-            {
-                signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
-                Response.Redirect("/Account/Manage?m=RemovePhoneNumberSuccess");
-            }
-        }
+    
+    public IEnumerable<OpenAuthAccountData> GetExternalLogins()
+    {
+        var accounts = OpenAuth.GetAccountsForUser(User.Identity.Name);
+        CanRemoveExternalLogins = CanRemoveExternalLogins || accounts.Count() > 1;
+        return accounts;
+    }
 
-        // DisableTwoFactorAuthentication
-        protected void TwoFactorDisable_Click(object sender, EventArgs e)
-        {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            manager.SetTwoFactorEnabled(User.Identity.GetUserId(), false);
+    public void RemoveExternalLogin(string providerName, string providerUserId)
+    {
+        var m = OpenAuth.DeleteAccount(User.Identity.Name, providerName, providerUserId)
+            ? "?m=RemoveLoginSuccess"
+            : String.Empty;
+        Response.Redirect("~/Account/Manage.aspx" + m);
+    }
+    
 
-            Response.Redirect("/Account/Manage");
-        }
-
-        //EnableTwoFactorAuthentication 
-        protected void TwoFactorEnable_Click(object sender, EventArgs e)
-        {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            manager.SetTwoFactorEnabled(User.Identity.GetUserId(), true);
-
-            Response.Redirect("/Account/Manage");
-        }
+    protected static string ConvertToDisplayDateTime(DateTime? utcDateTime)
+    {
+        // You can change this method to convert the UTC date time into the desired display
+        // offset and format. Here we're converting it to the server timezone and formatting
+        // as a short date and a long time string, using the current thread culture.
+        return utcDateTime.HasValue ? utcDateTime.Value.ToLocalTime().ToString("G") : "[never]";
     }
 }
